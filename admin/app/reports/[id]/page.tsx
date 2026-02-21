@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ interface Report {
   evidence?: any[];
 }
 
-export default function ReportDetailPage() {
+function ReportDetailContent() {
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,8 @@ export default function ReportDetailPage() {
         
         if (!response.ok) {
           setIsAuthenticated(false);
-          router.replace('/login?redirect=' + encodeURIComponent(window.location.pathname));
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : `/reports/${params.id || ''}`;
+          router.replace('/login?redirect=' + encodeURIComponent(currentPath));
           return;
         }
         
@@ -65,7 +66,8 @@ export default function ReportDetailPage() {
       } catch (error) {
         console.error('Auth check error:', error);
         setIsAuthenticated(false);
-        router.replace('/login');
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : `/reports/${params.id || ''}`;
+        router.replace('/login?redirect=' + encodeURIComponent(currentPath));
       }
     };
 
@@ -504,5 +506,17 @@ export default function ReportDetailPage() {
         fileName={selectedImage?.name}
       />
     </div>
+  );
+}
+
+export default function ReportDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      </div>
+    }>
+      <ReportDetailContent />
+    </Suspense>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
 import { Loader2 } from "lucide-react";
 
-export default function ReportsLayout({
+function ReportsContent({
   children,
 }: {
   children: React.ReactNode;
@@ -23,14 +23,16 @@ export default function ReportsLayout({
         });
         
         if (!response.ok) {
-          router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/reports';
+          router.push('/login?redirect=' + encodeURIComponent(currentPath));
           return;
         }
         
         setLoading(false);
       } catch (error) {
         console.error('Auth check error:', error);
-        router.push('/login');
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/reports';
+        router.push('/login?redirect=' + encodeURIComponent(currentPath));
       }
     };
 
@@ -56,5 +58,22 @@ export default function ReportsLayout({
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ReportsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <span className="ml-2 text-slate-600 dark:text-slate-400">Memuat...</span>
+      </div>
+    }>
+      <ReportsContent>{children}</ReportsContent>
+    </Suspense>
   );
 }

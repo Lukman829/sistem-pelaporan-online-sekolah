@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ const statusLabels: Record<string, string> = {
   closed: "Ditutup",
 };
 
-export default function ReportsPage() {
+function ReportsContent() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -63,7 +63,8 @@ export default function ReportsPage() {
         
         if (!response.ok) {
           setIsAuthenticated(false);
-          router.replace('/login?redirect=' + encodeURIComponent(window.location.pathname));
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/reports';
+          router.replace('/login?redirect=' + encodeURIComponent(currentPath));
           return;
         }
         
@@ -72,7 +73,8 @@ export default function ReportsPage() {
       } catch (error) {
         console.error('Auth check error:', error);
         setIsAuthenticated(false);
-        router.replace('/login');
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/reports';
+        router.replace('/login?redirect=' + encodeURIComponent(currentPath));
       }
     };
 
@@ -234,5 +236,17 @@ export default function ReportsPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      </div>
+    }>
+      <ReportsContent />
+    </Suspense>
   );
 }
